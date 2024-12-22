@@ -27,8 +27,7 @@ Opérateurs Composés : %= (compound remainder)  &= (compound bitwise and)  *= (
 #define electrovanne 10 
 #define pompeVidange 11
 #define pompeLavage 12
-#define produitLavage 9
-
+#define Produit 9
 
 #define CTNpin A0  //definition broche analogique CTN
 float Rpont = 20000; //Valeur resistance du pont CTN
@@ -64,7 +63,7 @@ unsigned long departTotalMaxiLavag =0, departTempsLavage =0 ,departTempsRempliss
 unsigned long tempoMesureTemperature = 0; 
 //bool verrouillage fonctionnement lavage
 bool onPrerincage = false,onRincage = false,onPrelavage = false,onProgrammeRapide = false, onProgrammeEco = false,onProgrammIntensif =false,onCycleLavage =false, onJetsLavage =false;
-bool onMenuReglage = false, onMenuStart = false, onReglage = false, onRemplissage = false, onChauffe = false, onPrevidange = false, onVidange = false,onProduitLavage = false,onArret = false, onPause = false;
+bool onMenuReglage = false, onMenuStart = false, onReglage = false, onRemplissage = false, onChauffe = false, onPrevidange = false, onVidange = false,onArret = false, onPause = false;
 
 
 //variables switch
@@ -75,8 +74,17 @@ bool onMenuReglage = false, onMenuStart = false, onReglage = false, onRemplissag
 
 void setup()
 {
-
-
+	pinMode(bpMarcheArret,INPUT_PULLUP);
+	pinMode(bpSelection,INPUT_PULLUP);
+	pinMode(debimetre,INPUT_PULLUP);
+	pinMode(pressotat,INPUT_PULLUP);
+	pinMode(securitePorte,INPUT_PULLUP);
+	pinMode(antidebordement,INPUT_PULLUP);
+	pinMode(chauffe,OUTPUT);
+	pinMode(electrovanne, OUTPUT);
+	pinMode(pompeVidange, OUTPUT);
+	pinMode(pompeLavage, OUTPUT);
+	
 	digitalWrite(chauffe, LOW);
 	digitalWrite(electrovanne, LOW);
 	digitalWrite(pompeVidange, LOW);
@@ -85,18 +93,17 @@ void setup()
 	lcd.begin(16, 2);//initialisation affichage		
 	ligne1Affichage =1;ligne2Affichage =1; affichage();//affichage démarrage	
 
-
 	} 
 
 	
 void remplissage()
 {
 if (debimetre )	{}
-if (digitalRead(electrovanne)== LOW && digitalRead(pressotat) == LOW){
+if (digitalRead(electrovanne)== LOW && digitalRead(pressotat) == HIGH){	
 	digitalWrite(electrovanne, HIGH);
 	ligne1Affichage = 2; ligne2Affichage =5;affichage();
 	 }
-if ((millis()-departTempsRemplissage >tempsRemplissage)||digitalRead(pressotat) == HIGH){
+if ((millis()-departTempsRemplissage >tempsRemplissage)||digitalRead(pressotat) == LOW){
 	digitalWrite(electrovanne, LOW);ligne1Affichage = 2; ligne2Affichage =2;affichage();onRemplissage = false;
 	sequenceLavage++;onCycleLavage = true;
 	delay(1000);
@@ -151,29 +158,19 @@ if ((millis()-departTempsMaxiChauffe >tempsMaxiChauffe )||temperature > temperat
 }
 
 
-void produit(){
-
-	digitalWrite(produit, HIGH);
-	ligne1Affichage = 17;ligne2Affichage =9;affichage();
-	delay(2000);
-	digitalWrite(produit, LOW);
-	onProduitLavage = false;sequenceLavage++;onCycleLavage = true;
-
-}
-
 void JetsLavage(){
 	
-if (digitalRead(pompeLavage)== LOW && digitalRead(antidebordement)== LOW && digitalRead(securitePorte)== HIGH){
+if (digitalRead(pompeLavage)== LOW && digitalRead(antidebordement)== HIGH && digitalRead(securitePorte)== LOW){
 	digitalWrite(pompeLavage, HIGH);
 	if (sequenceLavage == 6){ligne1Affichage = 13;affichage();}
 	else if(sequenceLavage == 9){ligne1Affichage = 14;affichage();}
 	else {ligne1Affichage = 8;affichage();}	
 	 }
 	 
-	if((digitalRead(antidebordement)== HIGH || digitalRead(securitePorte)== LOW) && digitalRead(pompeLavage)== HIGH){
+	if((digitalRead(antidebordement)== LOW || digitalRead(securitePorte)== HIGH) && digitalRead(pompeLavage)== HIGH){
 	digitalWrite(pompeLavage, LOW);
-	if(digitalRead(antidebordement)== HIGH){lcd.clear();ligne1Affichage = 10; ligne2Affichage =5;affichage();delay(1000);}
-	if (digitalRead(securitePorte)== LOW){lcd.clear();ligne1Affichage = 12; ligne2Affichage =6;affichage();delay(1000);}
+	if(digitalRead(antidebordement)== LOW){lcd.clear();ligne1Affichage = 10; ligne2Affichage =5;affichage();delay(1000);}
+	if (digitalRead(securitePorte)== HIGH){lcd.clear();ligne1Affichage = 12; ligne2Affichage =6;affichage();delay(1000);}
 	}
 	
 if (millis()-departTempsLavage >tempsLavage - 600000){onChauffe = false;}	 
@@ -192,19 +189,17 @@ if (millis()-departTempsLavage >tempsLavage){
 void cycleLavage(){
 	if (sequenceLavage>12)sequenceLavage=0;
 	switch(sequenceLavage)  {
-		case 0:{delay(10);break;}
 	case 1:{onPrevidange = true;onVidange = true;departTempsVidange = millis();departTotalMaxiLavag = millis();onCycleLavage = false ;delay(10);break;}	
-	case 2:{onRemplissage = true ;departTempsRemplissage = millis();onCycleLavage = false ;delay(10);break;}
-	case 3:{onProduitLavage = true;onCycleLavage = false ;delay(10);break;}
-	case 4:{onJetsLavage = true;onChauffe = true;departTempsLavage = millis();departTempsMaxiChauffe = millis();onCycleLavage = false;delay(10);break;};
-	case 5:{onVidange = true;departTempsVidange = millis();onCycleLavage = false ;delay(10);break;}
-	case 6:{onRemplissage = true ;departTempsRemplissage = millis();onCycleLavage = false ;delay(10);break;}
-	case 7:{onJetsLavage = true;departTempsLavage = millis();tempsLavage = tempsPreRincage;onCycleLavage = false;delay(10);break;};
-	case 8:{onVidange = true;departTempsVidange = millis();onCycleLavage = false ;delay(10);break;}
-	case 9:{onRemplissage = true ;departTempsRemplissage = millis();onCycleLavage = false ;delay(10);break;}
-	case 10:{onJetsLavage = true;onChauffe = true;departTempsLavage = millis();tempsLavage = tempsRincage;departTempsMaxiChauffe = millis();onCycleLavage = false;delay(10);break;};
-	case 11:{onVidange = true;departTempsVidange = millis();onCycleLavage = false ;delay(10);break;}
-	case 12:{onArret = true;departTempsLavage = millis();onCycleLavage = false ; onRemplissage = false; onChauffe = false; onJetsLavage = false;onVidange = false;delay(10);break;}
+	case 2:{onRemplissage = true ;departTempsRemplissage = millis();onCycleLavage = false ;delay(10);break;}	
+	case 3:{onJetsLavage = true;onChauffe = true;departTempsLavage = millis();departTempsMaxiChauffe = millis();onCycleLavage = false;delay(10);break;};
+	case 4:{onVidange = true;departTempsVidange = millis();onCycleLavage = false ;delay(10);break;}
+	case 5:{onRemplissage = true ;departTempsRemplissage = millis();onCycleLavage = false ;delay(10);break;}
+	case 6:{onJetsLavage = true;departTempsLavage = millis();tempsLavage = tempsPreRincage;onCycleLavage = false;delay(10);break;};		
+	case 7:{onVidange = true;departTempsVidange = millis();onCycleLavage = false ;delay(10);break;}	
+	case 8:{onRemplissage = true ;departTempsRemplissage = millis();onCycleLavage = false ;delay(10);break;}
+	case 9:{onJetsLavage = true;onChauffe = true;departTempsLavage = millis();tempsLavage = tempsRincage;departTempsMaxiChauffe = millis();onCycleLavage = false;delay(10);break;};
+	case 10:{onVidange = true;departTempsVidange = millis();onCycleLavage = false ;delay(10);break;}	
+	case 11:{onArret = true;departTempsLavage = millis();onCycleLavage = false ; onRemplissage = false; onChauffe = false; onJetsLavage = false;onVidange = false;delay(10);break;}
 	
 	}
 	
@@ -234,7 +229,6 @@ void affichage(){
 	   case 14:{lcd.setCursor( 4, 0 );lcd.print("Rincage");delay(200);ligne1Affichage =0;break;}
 	   case 15:{lcd.setCursor( 2, 0 );lcd.print("Previdange");delay(200);ligne1Affichage =0;break;}
 	   case 16:{lcd.setCursor( 1, 0 );lcd.print("Tps depasse!");delay(200);ligne1Affichage =0;break;}
-	   case 17:{lcd.setCursor( 4, 0 );lcd.print("Produit");delay(200);ligne1Affichage =0;break;}
  }
 }
 if (ligne2Affichage > 0){	
@@ -248,7 +242,6 @@ if (ligne2Affichage > 0){
 	case 6:{lcd.setCursor( 3, 1 );lcd.print("Ouverte");delay(200);ligne2Affichage =0;break;}
 	case 7:{lcd.setCursor( 4, 1 );lcd.print(temperature);lcd.print("*C");ligne2Affichage =0;break;}
 	case 8:{lcd.setCursor( 3, 1 );lcd.print("Erreur!");ligne2Affichage =0;break;}
-	case 9:{lcd.setCursor( 3, 1 );lcd.print("Lavage");ligne2Affichage =0;break;}
 	 }
 	}
 }
@@ -313,32 +306,27 @@ void arret(){
 
 void loop()
 { //Dépassement tps maxi
-	if( (millis()-departTotalMaxiLavag >tempTotalMaxiLavage) && onCycleLavage ==true && onArret == false){
+	if( millis()-departTotalMaxiLavag >tempTotalMaxiLavage){
 				
-
-		ligne1Affichage = 16;ligne2Affichage =8;affichage();
 		onArret = true;
+		ligne1Affichage = 16;ligne2Affichage =8;affichage();
 		}
 	//Bouton sélection programme	
-	if (digitalRead(bpSelection) == HIGH) {onMenuReglage = true;
-
-		if (digitalRead(securitePorte) == LOW){onMenuStart = false;}
+	if (digitalRead(bpSelection) == LOW) {onMenuReglage = true;
+		if (digitalRead(securitePorte) == HIGH){onMenuStart = false;}
 		delay(30);
 		}
 	//Bouton arret
-	if (digitalRead(bpMarcheArret) == HIGH) {onArret = true;delay(30);
-
-	}
+	if (digitalRead(bpMarcheArret) == LOW) {onArret = true;delay(30);}
 	
-	if (digitalRead(securitePorte) == HIGH) {
+	if (digitalRead(securitePorte) == LOW) {
 	 menuStart();onMenuStart = true;delay(30);}
 				
 
 		if (onMenuReglage){menuReglage();}
 		if (onMenuStart){menuStart();}
 		if (onArret){arret();}
-		if (onRemplissage){remplissage();}
-		if (onProduitLavage){produit();}
+		if (onRemplissage)	{remplissage();}
 		if (onChauffe)	{chauffage();}		
 		if (onVidange){vidange();}
 		if (onJetsLavage) {JetsLavage();}		
