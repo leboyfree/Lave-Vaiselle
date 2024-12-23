@@ -98,6 +98,7 @@ void remplissage(){
 	//conditions de remplissage
 	if (digitalRead(electrovanne)== LOW && digitalRead(pressotat) == HIGH && debmComptage < valeurRemplissage){
 		digitalWrite(electrovanne, HIGH);
+		//affichage
 		ligne1Affichage = 2; ligne2Affichage =5; affichage();
 	}
 	//conditions fin de remplissage & temps de remplissage de sécurité
@@ -111,11 +112,12 @@ void remplissage(){
 
 
 void produitLavage(){
-
+	//ouverture trappe
 	digitalWrite(produit, HIGH);
 	ligne1Affichage = 17; ligne2Affichage =9;affichage();
 	//delais ouverture trappe produit
 	delay(3000);
+	//fermeture trappe
 	digitalWrite(produit, LOW);
 	delay(30);
 	onProduit = false; sequenceLavage++; onCycleLavage = true;
@@ -126,17 +128,19 @@ void produitLavage(){
 
 
 void vidange(){
-
+	//temps de vidange des restes d'eau en previdange
 	unsigned long tempsPrevidange = tempsVidange/3;
+	//activation pompe vidange
 	if (digitalRead(pompeVidange) == LOW){
 		digitalWrite(pompeVidange, HIGH);
+		//affichage
 		if (onPrevidange){ligne1Affichage = 15; ligne2Affichage =5; affichage();}
 		else {ligne1Affichage = 4; ligne2Affichage =5; affichage();}
 	}
-
+	//arret pompe vidange
 	if ((millis()-departTempsVidange > tempsVidange)||(onPrevidange && (millis()-departTempsVidange > tempsPrevidange))){
 		digitalWrite(pompeVidange, LOW); lcd.clear();
-
+	//affichage & selection suite programme
 		if (onPrevidange){ligne1Affichage = 15; ligne2Affichage =2; affichage(); sequenceLavage++; onCycleLavage = true;
 		onPrevidange =false;onVidange = false;
 		}
@@ -149,29 +153,31 @@ void vidange(){
 
 
 int mesureTemperature(){
-
+	//prise valeur & conversion en température
 	float N = analogRead(CTNpin); //mettre la valeur de la CTN dans N
 	float Url = 5*N/1023;   //Converti la valeur en tension sue resistance ligne
 	float Rctn = Rpont*(5-Url)/Url;//Calcul valeur résitance ctn
-	float Temperature = -26.04*log(Rctn)+265.26;//calcul temperature et convertion en °c  
+	float Temperature = -26.04*log(Rctn)+265.26;//calcul temperature et convertion en °c
+	//envoi température
 	return Temperature;
 }
 
 
 
 void chauffage(){
-
-	if(millis() - 5000 > (tempoMesureTemperature)){temperature = mesureTemperature();tempoMesureTemperature = millis();
+	//delais mesure température
+	if(millis() - 3000 > (tempoMesureTemperature)){temperature = mesureTemperature();tempoMesureTemperature = millis();
+		//affichage
 		if (sequenceLavage == 7){ligne1Affichage = 13;ligne2Affichage = 7; affichage();}
 		else if (sequenceLavage == 10){ligne1Affichage = 14; ligne2Affichage = 7; affichage();}
 		else{ ligne1Affichage = 8; ligne2Affichage = 7; affichage();}
 		}
 
-
+	//condition de remise en marche chauffe
 	if (digitalRead(chauffe)== LOW && temperature <(temperatureLavage - 5)){departTempsMaxiChauffe = millis();
 	digitalWrite(chauffe, HIGH);
 	}
-
+	//condition d'arret chauffe
 	if ((millis()-departTempsMaxiChauffe >tempsMaxiChauffe )||temperature > temperatureLavage){
 	digitalWrite(chauffe, LOW);
 	}
@@ -180,26 +186,32 @@ void chauffage(){
 
 
 void JetsLavage(){
-
+		//conditions marche pompe lavage
 	if (digitalRead(pompeLavage) == LOW && digitalRead(antidebordement) == HIGH && digitalRead(securitePorte) == LOW){
 		digitalWrite(pompeLavage, HIGH);
+		//affichage
 		if (sequenceLavage == 7){ligne1Affichage = 13; affichage();}
 		else if(sequenceLavage == 10){ligne1Affichage = 14; affichage();}
 		else {ligne1Affichage = 8; affichage();}
 	}
-
+		//arret de la  pompe de lavage en cas d'ouverture de la porte ou débordement
 	if((digitalRead(antidebordement) == LOW || digitalRead(securitePorte) == HIGH) && digitalRead(pompeLavage) == HIGH){
 		digitalWrite(pompeLavage, LOW);
+		//affichage
 		if(digitalRead(antidebordement) == LOW){lcd.clear(); ligne1Affichage = 10; ligne2Affichage =5; affichage(); delay(500);}
 		if (digitalRead(securitePorte) == HIGH){lcd.clear(); ligne1Affichage = 12; ligne2Affichage =6; affichage(); delay(500);}
 	}
+		//arreter la chauffe 10 mn avant la fin du cycle(economie)
+	if (millis() - departTempsLavage > tempsLavage - 600000){digitalWrite(chauffe, LOW);onChauffe = false;}
 
-	if (millis() - departTempsLavage > tempsLavage - 600000){onChauffe = false;}
+		//fin temps de lavage ou rinçage
 	if (millis() - departTempsLavage > tempsLavage){
 		digitalWrite(pompeLavage, LOW); digitalWrite(chauffe, LOW);
+		//affichage
 		if (sequenceLavage == 7){ligne1Affichage = 13; ligne2Affichage =2; affichage();}
 		else if(sequenceLavage == 10){ligne1Affichage = 14; ligne2Affichage =2; affichage();}
 		else {ligne1Affichage = 8; affichage();}
+		//sortie fonction
 		onJetsLavage = false; onChauffe = false; sequenceLavage++; onCycleLavage = true;
 		delay(500);
 	}
@@ -296,9 +308,13 @@ void menuReglage(){
 	if (SelectionMenu > 4)SelectionMenu = 0;
 	if (SelectionMenu == 0)lcd.clear();
 	switch(SelectionMenu)  {		//affichage
+		//programme rapide
 		case 1:{ligne1Affichage = 5; ligne2Affichage =3; affichage(); onMenuReglage = false; delay(10);break;}
+		//programme Eco
 		case 2:{ligne1Affichage = 6; ligne2Affichage =3; affichage(); onMenuReglage = false; delay(10);break;}
+		//programme intensif
 		case 3:{ligne1Affichage = 7; ligne2Affichage =3; affichage(); onMenuReglage = false; delay(10);break;}
+		//vidange
 		case 4:{ligne1Affichage = 4; ligne2Affichage =3; affichage(); onMenuReglage = false; delay(10);break;}
 	}
 }
@@ -338,12 +354,12 @@ void arret(){
 	digitalWrite(pompeVidange, LOW);
 	digitalWrite(pompeLavage, LOW);
 	lcd.clear();
-
+	//affichage
 	if (sequenceLavage == 12){ligne1Affichage = 8; ligne2Affichage =2; affichage();}
 	else {ligne1Affichage = 11; ligne2Affichage =2; affichage();}
-
+	// sortie fonction
 	sequenceLavage =0; onCycleLavage = false; onRemplissage = false; onChauffe =false; onJetsLavage =false; onArret = false;
-
+	//condition sortie fonction
 	while(digitalRead(bpSelection) == LOW && digitalRead(securitePorte == HIGH));
 }
 
