@@ -12,7 +12,7 @@
 #define electrovanne 10 
 #define pompeVidange 11
 #define pompeLavage 12
-#define Produit 9
+#define produit 9
 
 #define CTNpin A0  //definition broche analogique CTN
 float Rpont = 20000; //Valeur resistance du pont CTN
@@ -80,11 +80,13 @@ void setup(){
 	pinMode(electrovanne, OUTPUT);
 	pinMode(pompeVidange, OUTPUT);
 	pinMode(pompeLavage, OUTPUT);
+	pinMode(produit, OUTPUT);
 
 	digitalWrite(chauffe, LOW);
 	digitalWrite(electrovanne, LOW);
 	digitalWrite(pompeVidange, LOW);
 	digitalWrite(pompeLavage, LOW);
+	digitalWrite(produit, LOW);
 
 	lcd.begin(16, 2);//initialisation affichage
 	ligne1Affichage =1; ligne2Affichage =1; affichage();//affichage démarrage
@@ -110,11 +112,11 @@ void remplissage(){
 
 void produitLavage(){
 
-	digitalWrite(produitLavage, HIGH);
+	digitalWrite(produit, HIGH);
 	ligne1Affichage = 17; ligne2Affichage =9;affichage();
 	//delais ouverture trappe produit
-	delay(2000);
-	digitalWrite(produitLavage, LOW);
+	delay(3000);
+	digitalWrite(produit, LOW);
 	delay(30);
 	onProduit = false; sequenceLavage++; onCycleLavage = true;
 
@@ -159,7 +161,7 @@ int mesureTemperature(){
 
 void chauffage(){
 
-	if(millis() - 2000 > (tempoMesureTemperature)){temperature = mesureTemperature();tempoMesureTemperature = millis();
+	if(millis() - 5000 > (tempoMesureTemperature)){temperature = mesureTemperature();tempoMesureTemperature = millis();
 		if (sequenceLavage == 7){ligne1Affichage = 13;ligne2Affichage = 7; affichage();}
 		else if (sequenceLavage == 10){ligne1Affichage = 14; ligne2Affichage = 7; affichage();}
 		else{ ligne1Affichage = 8; ligne2Affichage = 7; affichage();}
@@ -336,8 +338,12 @@ void arret(){
 	digitalWrite(pompeVidange, LOW);
 	digitalWrite(pompeLavage, LOW);
 	lcd.clear();
-	ligne1Affichage = 11; ligne2Affichage =2; affichage();
+
+	if (sequenceLavage == 12){ligne1Affichage = 8; ligne2Affichage =2; affichage();}
+	else {ligne1Affichage = 11; ligne2Affichage =2; affichage();}
+
 	sequenceLavage =0; onCycleLavage = false; onRemplissage = false; onChauffe =false; onJetsLavage =false; onArret = false;
+
 	while(digitalRead(bpSelection) == LOW && digitalRead(securitePorte == HIGH));
 }
 
