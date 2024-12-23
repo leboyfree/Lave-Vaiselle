@@ -1,18 +1,3 @@
-/*MemoArduino pour autocomplétion:
- digitalRead() digitalWrite() pinMode() analogRead() analogReference() analogWrite() analogReadResolution() analogWriteResolution() noTone() pulseIn() pulseInLong() shiftIn() shiftOut() tone() delay() delayMicroseconds()
-micros() millis() HIGH LOW INPUT OUTPUT  INPUT_PULLUP  LED_BUILTIN true false Floating Point Constants Integer Constants (unsigned int) (unsigned long) byte() char() float() int() long() word() loop() setup() 
- break continue do...while else for goto if return  switch...case  while  #define (define) #include (include)  (semicolon) {} (curly braces) abs() constrain() map() max() min() pow() sq() sqrt() 
- cos() sin() tan() isAlpha() isAlphaNumeric() isAscii() isControl() isDigit() isGraph() isHexadecimalDigit() isLowerCase() isPrintable() isPunct() isSpace() isUpperCase() isWhitespace() array bool boolean byte char double
-float int long short size_t string String() unsigned char  unsigned int  unsigned long  void word random() randomSeed() bit() bitClear() bitRead() bitSet() bitWrite() highByte() lowByte() attachInterrupt() detachInterrupt() 
-interrupts() noInterrupts() Serial Stream Keyboard Mouse const scope static volatile PROGMEM sizeof() 
-Fonction serial: if(Serial) available() availableForWrite() begin() end() find() findUntil() flush() parseFloat() parseInt() peek() print() println() read() readBytes() readBytesUntil() readString() readStringUntil() setTimeout() write() serialEvent()
-Opérateurs de Comparaison: != (not equal to)  < (less than)  <= (less than or equal to)  == (equal to)  > (greater than)  >= (greater than or equal to)
-Opérateurs Booléens: ! (logical not)  && (logical and)  || (logical or)  --- Opérateurs d'accès aux Pointeurs: & (reference operator)  * (dereference operator) 
-Opérateurs Bit à Bit: & (bitwise and)  << (bitshift left)  >> (bitshift right)  ^ (bitwise xor)  | (bitwise or)  ~ (bitwise not) 
-Opérateurs Composés : %= (compound remainder)  &= (compound bitwise and)  *= (compound multiplication)  ++ (increment)  += (compound addition)  -- (decrement)  -= (compound subtraction)  /= (compound division)  ^= (compound bitwise xor)  |= (compound bitwise or) 
-*/
-
-//I2C: SDA A4 	SCL A5 
 
 #include <LiquidCrystal.h>
 
@@ -123,7 +108,7 @@ void remplissage(){
 
 
 
-	void produitLavage(){
+void produitLavage(){
 
 	digitalWrite(produitLavage, HIGH);
 	ligne1Affichage = 17; ligne2Affichage =9;affichage();
@@ -139,6 +124,7 @@ void remplissage(){
 
 
 void vidange(){
+
 	unsigned long tempsPrevidange = tempsVidange/3;
 	if (digitalRead(pompeVidange) == LOW){
 		digitalWrite(pompeVidange, HIGH);
@@ -161,6 +147,7 @@ void vidange(){
 
 
 int mesureTemperature(){
+
 	float N = analogRead(CTNpin); //mettre la valeur de la CTN dans N
 	float Url = 5*N/1023;   //Converti la valeur en tension sue resistance ligne
 	float Rctn = Rpont*(5-Url)/Url;//Calcul valeur résitance ctn
@@ -219,6 +206,7 @@ void JetsLavage(){
 
 
 void cycleLavage(){
+
 	if (sequenceLavage>12)sequenceLavage=0;
 	switch(sequenceLavage)  {
 		//attente
