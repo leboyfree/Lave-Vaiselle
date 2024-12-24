@@ -2,7 +2,7 @@
 #include <LiquidCrystal.h>
 
 //equipement lave linge
-#define bpMarcheArret A5
+#define bpArret A5
 #define bpSelection A4
 #define debimetre 2
 #define pressotat A3
@@ -70,7 +70,7 @@ void setup(){
 	//pinMode(debimetre, INPUT);     // Avec résistance externe
 	attachInterrupt(digitalPinToInterrupt(debimetre), debmImpulsionInterrupt, FALLING);
 
-	pinMode(bpMarcheArret,INPUT_PULLUP);
+	pinMode(bpArret,INPUT_PULLUP);
 	pinMode(bpSelection,INPUT_PULLUP);
 	pinMode(debimetre,INPUT_PULLUP);
 	pinMode(pressotat,INPUT_PULLUP);
@@ -353,13 +353,13 @@ void arret(){
 	digitalWrite(electrovanne, LOW);
 	digitalWrite(pompeVidange, LOW);
 	digitalWrite(pompeLavage, LOW);
-	lcd.clear();
+	digitalWrite(produit, LOW);
 	//affichage
+	lcd.clear();
 	if (sequenceLavage == 0){ligne1Affichage = 8; ligne2Affichage =2; affichage();}
 	else {ligne1Affichage = 11; ligne2Affichage =2; affichage();}
 	// sortie fonction
 	sequenceLavage = 0; onCycleLavage = false; onRemplissage = false; onVidange = false; onChauffe =false; onJetsLavage =false; onArret = false;
-	//condition sortie fonction
 
 }
 
@@ -380,7 +380,7 @@ void loop(){
 	}
 
 	//Bouton arret
-	if (digitalRead(bpMarcheArret) == LOW) {onArret = true ;delay(30);}
+	if (digitalRead(bpArret) == LOW) {onArret = true ;delay(30);}
 
 	//Securité porte qui valide le démarrage
 	//et coupe la pompe de lavage en cours de lavage
