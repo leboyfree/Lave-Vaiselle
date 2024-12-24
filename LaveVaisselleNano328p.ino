@@ -221,10 +221,10 @@ void JetsLavage(){
 
 void cycleLavage(){
 
-	if (sequenceLavage>12)sequenceLavage=0;
+	if (sequenceLavage>11)sequenceLavage=0;
 	switch(sequenceLavage)  {
-		//attente
-		case 0:{onCycleLavage = false; delay(10); break;}
+		//arret programme
+		case 0:{onArret = true; onCycleLavage = false; delay(10); break;}
 		//prévidange en cas d'eau dans l'appareil
 		case 1:{onPrevidange = true; onVidange = true; departTempsVidange = millis(); departTotalMaxiLavag = millis(); onCycleLavage = false; delay(10); break;}
 		//remplissage pour lavage
@@ -247,8 +247,8 @@ void cycleLavage(){
 		case 10:{onJetsLavage = true; onChauffe = true; departTempsLavage = millis(); tempsLavage = tempsRincage; departTempsMaxiChauffe = millis(); onCycleLavage = false; delay(10); break;};
 		//vidange rinçage
 		case 11:{onVidange = true; departTempsVidange = millis(); onCycleLavage = false ; delay(10); break;}
-		//fin programme
-		case 12:{onArret = true; onCycleLavage = false; delay(10); break;}
+
+
 
 	}
 
@@ -355,12 +355,12 @@ void arret(){
 	digitalWrite(pompeLavage, LOW);
 	lcd.clear();
 	//affichage
-	if (sequenceLavage == 12){ligne1Affichage = 8; ligne2Affichage =2; affichage();}
+	if (sequenceLavage == 0){ligne1Affichage = 8; ligne2Affichage =2; affichage();}
 	else {ligne1Affichage = 11; ligne2Affichage =2; affichage();}
 	// sortie fonction
-	sequenceLavage =0; onCycleLavage = false; onRemplissage = false; onChauffe =false; onJetsLavage =false; onArret = false;
+	sequenceLavage = 0; onCycleLavage = false; onRemplissage = false; onVidange = false; onChauffe =false; onJetsLavage =false; onArret = false;
 	//condition sortie fonction
-	while(digitalRead(bpSelection) == LOW && digitalRead(securitePorte == HIGH));
+
 }
 
 
